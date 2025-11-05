@@ -1,10 +1,12 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
+import os
 
 # ==============================
 # KONFIGURASI
 # ==============================
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 GUILD_ID = 1414219665428844606  # ID server untuk sync cepat
 
 # Role & user yang boleh pakai bot
@@ -52,11 +54,13 @@ def is_allowed(user: discord.Member):
 @app_commands.guilds(discord.Object(id=GUILD_ID))
 async def text(interaction: discord.Interaction, content: str):
     if not is_allowed(interaction.user):
-        await interaction.response.send_message("🚫 Kamu tidak diizinkan memakai bot ini.", ephemeral=True)
+        await interaction.response.send_message(
+            "🚫 Kamu tidak diizinkan memakai bot ini.", ephemeral=True)
         return
 
     if not content.strip():
-        await interaction.response.send_message("⚠️ Teks tidak boleh kosong!", ephemeral=True)
+        await interaction.response.send_message("⚠️ Teks tidak boleh kosong!",
+                                                ephemeral=True)
         return
 
     await interaction.response.send_message("✅ Pesan dikirim!", ephemeral=True)
@@ -67,54 +71,65 @@ async def text(interaction: discord.Interaction, content: str):
 # ==============================
 # /dm → kirim pesan ke DM user (mention)
 # ==============================
-@bot.tree.command(name="dm", description="Kirim pesan ke DM user tertentu (mention)")
-@app_commands.describe(
-    user="User yang ingin dikirimi pesan",
-    message="Isi pesan yang ingin dikirim ke DM"
-)
+@bot.tree.command(name="dm",
+                  description="Kirim pesan ke DM user tertentu (mention)")
+@app_commands.describe(user="User yang ingin dikirimi pesan",
+                       message="Isi pesan yang ingin dikirim ke DM")
 @app_commands.guilds(discord.Object(id=GUILD_ID))
-async def dm(interaction: discord.Interaction, user: discord.User, message: str):
+async def dm(interaction: discord.Interaction, user: discord.User,
+             message: str):
     if not is_allowed(interaction.user):
-        await interaction.response.send_message("🚫 Kamu tidak diizinkan memakai bot ini.", ephemeral=True)
+        await interaction.response.send_message(
+            "🚫 Kamu tidak diizinkan memakai bot ini.", ephemeral=True)
         return
 
     await interaction.response.defer(ephemeral=True)
     try:
         await user.send(message)
-        await interaction.followup.send(f"✅ Pesan berhasil dikirim ke {user.mention}!", ephemeral=True)
+        await interaction.followup.send(
+            f"✅ Pesan berhasil dikirim ke {user.mention}!", ephemeral=True)
         print(f"[LOG] /dm oleh {interaction.user} -> {user} : {message}")
     except discord.Forbidden:
-        await interaction.followup.send("❌ Gagal kirim DM — user menonaktifkan pesan langsung.", ephemeral=True)
+        await interaction.followup.send(
+            "❌ Gagal kirim DM — user menonaktifkan pesan langsung.",
+            ephemeral=True)
     except Exception as e:
-        await interaction.followup.send(f"❌ Gagal kirim DM: {e}", ephemeral=True)
+        await interaction.followup.send(f"❌ Gagal kirim DM: {e}",
+                                        ephemeral=True)
 
 
 # ==============================
 # /dmid → kirim pesan ke user via ID
 # ==============================
-@bot.tree.command(name="dmid", description="Kirim pesan ke DM user berdasarkan ID Discord")
-@app_commands.describe(
-    user_id="ID Discord user (contoh: 893729892951289858)",
-    message="Isi pesan yang ingin dikirim ke DM"
-)
+@bot.tree.command(name="dmid",
+                  description="Kirim pesan ke DM user berdasarkan ID Discord")
+@app_commands.describe(user_id="ID Discord user (contoh: 893729892951289858)",
+                       message="Isi pesan yang ingin dikirim ke DM")
 @app_commands.guilds(discord.Object(id=GUILD_ID))
 async def dmid(interaction: discord.Interaction, user_id: str, message: str):
     if not is_allowed(interaction.user):
-        await interaction.response.send_message("🚫 Kamu tidak diizinkan memakai bot ini.", ephemeral=True)
+        await interaction.response.send_message(
+            "🚫 Kamu tidak diizinkan memakai bot ini.", ephemeral=True)
         return
 
     await interaction.response.defer(ephemeral=True)
     try:
         user = await bot.fetch_user(int(user_id))
         await user.send(message)
-        await interaction.followup.send(f"✅ Pesan berhasil dikirim ke **{user}** (`{user.id}`)!", ephemeral=True)
+        await interaction.followup.send(
+            f"✅ Pesan berhasil dikirim ke **{user}** (`{user.id}`)!",
+            ephemeral=True)
         print(f"[LOG] /dmid oleh {interaction.user} -> {user} : {message}")
     except discord.NotFound:
-        await interaction.followup.send("❌ User dengan ID itu tidak ditemukan.", ephemeral=True)
+        await interaction.followup.send(
+            "❌ User dengan ID itu tidak ditemukan.", ephemeral=True)
     except discord.Forbidden:
-        await interaction.followup.send("❌ Gagal kirim DM — user menonaktifkan DM atau tidak berbagi server.", ephemeral=True)
+        await interaction.followup.send(
+            "❌ Gagal kirim DM — user menonaktifkan DM atau tidak berbagi server.",
+            ephemeral=True)
     except Exception as e:
-        await interaction.followup.send(f"❌ Terjadi error: {e}", ephemeral=True)
+        await interaction.followup.send(f"❌ Terjadi error: {e}",
+                                        ephemeral=True)
 
 
 # ==============================
